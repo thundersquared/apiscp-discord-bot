@@ -1,4 +1,13 @@
-FROM node:lts-alpine
+FROM node:16-alpine
 
-RUN set -eux && \
-    yarn
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy app source
+COPY . .
+
+# Install dependencies
+RUN yarn
+
+# Run app
+CMD [ "yarn", "start" ]
