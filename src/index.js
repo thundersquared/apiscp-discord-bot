@@ -39,6 +39,11 @@ bot.on('messageCreate', async message => {
     // Transform to lowercase for easier matching
     const content = message.content.toLowerCase();
 
+    // Show list of available commands
+    if (message.mentions.users.size > 0 && message.mentions.users.values().next().value.id === bot.user.id && content.includes('!commands')) {
+        return Bot.sendOrReply(bot, message, intents.intents.map(e => `- ${e.query}`).join("\n"));
+    }
+
     // Check if content matches a query, and send the response
     intents.intents.forEach(e => {
         if (content.includes(e.query)) return Bot.sendOrReply(bot, message, e.response);
