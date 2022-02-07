@@ -8,8 +8,10 @@ COPY . .
 
 # Install dependencies
 RUN set -eux && \
-    apk add --no-cache git && \\
+    apk add --no-cache git && \
+    git submodule init && \
     git submodule update && \
+    apk del git && \
     yarn
 
 # Run app
