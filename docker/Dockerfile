@@ -7,7 +7,9 @@ WORKDIR /usr/src/app
 COPY . .
 
 # Install dependencies
-RUN yarn
+RUN set -eux && \
+    git submodule update && \
+    yarn
 
 # Run app
 CMD [ "yarn", "start" ]
