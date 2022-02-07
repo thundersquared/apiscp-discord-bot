@@ -8,6 +8,7 @@ COPY . .
 
 # Install dependencies
 RUN set -eux && \
+    apk add --no-cache git && \\
     git submodule update && \
     yarn
 
