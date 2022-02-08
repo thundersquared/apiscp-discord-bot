@@ -33,6 +33,19 @@ class Intents {
                     this.maybeIndex(content);
                 },
             },
+            {
+                path: 'intents/docs/docs',
+                transformer: (currentPath, _, query) => {
+                    return {
+                        query,
+                        response: `<https://docs.apiscp.com/${currentPath}/>`,
+                    };
+                },
+                indexer: (currentPath, content) => {
+                    content.path = `<https://docs.apiscp.com/${currentPath}/>`;
+                    this.maybeIndex(content);
+                },
+            },
         ];
     }
 
@@ -55,37 +68,39 @@ class Intents {
             if (err) throw err;
 
             // Load all notes available
-            files.forEach(file => readFile(`src/${path}/${file}`, 'utf-8', (err, data) => {
-                if (err) throw err;
+            files
+                .filter(file => file.endsWith('.md'))
+                .forEach(file => readFile(`src/${path}/${file}`, 'utf-8', (err, data) => {
+                    if (err) throw err;
 
-                // Parse frontmatter
-                const content = fm(data);
-                const currentPath = basename(file, extname(file));
+                    // Parse frontmatter
+                    const content = fm(data);
+                    const currentPath = basename(file, extname(file));
 
-                // Check if notes has queries
-                if (content.attributes.hasOwnProperty('queries')) {
-                    content.attributes.queries.forEach(query => {
-                        // Apply transformation
-                        let result = transformer(currentPath, content, query.toLowerCase());
+                    // Check if notes has queries
+                    if (content.attributes.hasOwnProperty('queries')) {
+                        content.attributes.queries.forEach(query => {
+                            // Apply transformation
+                            let result = transformer(currentPath, content, query.toLowerCase());
 
-                        // Skip if result is false
-                        if (result) {
+                            // Skip if result is false
+                            if (result) {
 
-                            // Join response into a string if array found
-                            if (Array.isArray(result.response) && result.response.length > 0) {
-                                result.response = result.response.join("\n");
+                                // Join response into a string if array found
+                                if (Array.isArray(result.response) && result.response.length > 0) {
+                                    result.response = result.response.join("\n");
+                                }
+
+                                this.intents.push(result);
                             }
+                        });
+                    }
 
-                            this.intents.push(result);
-                        }
-                    });
-                }
-
-                // Maybe index
-                if (indexer) {
-                    indexer(currentPath, content);
-                }
-            }));
+                    // Maybe index
+                    if (indexer) {
+                        indexer(currentPath, content);
+                    }
+                }));
         });
     }
 
