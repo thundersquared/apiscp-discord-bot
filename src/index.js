@@ -4,9 +4,7 @@ require('dotenv').config();
 // Load packages
 const Discord = require('discord.js');
 const Bot = require('./Bot');
-
-// Store all parsed queries for later use
-const intents = new Bot.Intents();
+const Fuse = require('fuse.js');
 
 // Set up bot
 const bot = new Discord.Client({
@@ -17,9 +15,28 @@ const bot = new Discord.Client({
     ],
 });
 
+// Store all parsed queries for later use
+const intents = new Bot.Intents(bot);
+const commands = new Bot.Commands(bot);
+
+// Create new fts instance attached to the bot
+bot.fts = new Fuse([], {
+    includeScore: true,
+    keys: [
+        'attributes.title',
+        'attributes.tags',
+        'body',
+        {
+            name: 'attributes.queries',
+            weight: 2
+        },
+    ],
+});
+
 bot.on('ready', async () => {
     console.log(`Logged in as ${bot.user.tag}!`);
     intents.preload();
+    commands.refresh();
 });
 
 // Register message reaction handler
@@ -48,6 +65,20 @@ bot.on('messageCreate', async message => {
     intents.intents.forEach(e => {
         if (content.includes(e.query)) return Bot.sendOrReply(bot, message, e.response);
     });
+});
+
+bot.on('interactionCreate', async interaction => {
+    // Avoid handling other interactions
+    if (!interaction.isCommand()) return;
+
+    const { commandName } = interaction;
+    interaction.bot = bot;
+
+    // Retrieve command given its name
+    const command = commands.find(commandName);
+
+    // Execute with current context if a method is provided
+    if (command && command.execute) await command.execute(interaction);
 });
 
 bot.login(process.env.DISCORD_TOKEN);

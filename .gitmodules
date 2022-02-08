@@ -1,3 +1,6 @@
 [submodule "src/intents/notes"]
 	path = src/intents/notes
 	url = https://github.com/thundersquared/apiscp-notes.git
+[submodule "src/intents/docs"]
+	path = src/intents/docs
+	url = https://github.com/apisnetworks/apiscp-docs.git

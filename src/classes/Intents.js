@@ -3,7 +3,8 @@ const fm = require('front-matter');
 const { basename, extname } = require('path');
 
 class Intents {
-    constructor() {
+    constructor(client) {
+        this.client = client;
         this.intents = [];
         this.paths = [
             {
@@ -17,6 +18,7 @@ class Intents {
                         ],
                     };
                 },
+                indexer: (_, content) => this.maybeIndex(content),
             },
             {
                 path: 'intents/notes/content/notes',
@@ -26,6 +28,10 @@ class Intents {
                         response: `<https://notes.apiscp.com/${currentPath}/>`,
                     };
                 },
+                indexer: (currentPath, content) => {
+                    content.path = `<https://notes.apiscp.com/${currentPath}/>`;
+                    this.maybeIndex(content);
+                },
             },
         ];
     }
@@ -34,7 +40,7 @@ class Intents {
      * Preload intents iterating known paths
      */
     preload() {
-        this.paths.forEach(e => this.load(e.path, e.transformer));
+        this.paths.forEach(e => this.load(e.path, e.transformer, e.indexer || null));
     }
 
     /**
@@ -43,7 +49,7 @@ class Intents {
      * @param string path
      * @param function transformer
      */
-    load(path, transformer) {
+    load(path, transformer, indexer = null) {
         // Read notes directory
         readdir(`src/${path}`, (err, files) => {
             if (err) throw err;
@@ -74,8 +80,19 @@ class Intents {
                         }
                     });
                 }
+
+                // Maybe index
+                if (indexer) {
+                    indexer(currentPath, content);
+                }
             }));
         });
+    }
+
+    maybeIndex(data) {
+        if (this.client.fts && data) {
+            this.client.fts.add(data);
+        }
     }
 }
 

@@ -10,7 +10,8 @@
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
-    "front-matter": "^4.0.2"
+    "front-matter": "^4.0.2",
+    "fuse.js": "^6.5.3"
   },
   "devDependencies": {
     "jshint": "^2.13.4"
