@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 
 # Copy app source
 COPY . .
+COPY .* .
 
 # Install dependencies
 RUN set -eux && \
