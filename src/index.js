@@ -62,9 +62,11 @@ bot.on('messageCreate', async message => {
     }
 
     // Check if content matches a query, and send the response
-    intents.intents.forEach(e => {
-        if (content.includes(e.query)) return Bot.sendOrReply(bot, message, e.response);
-    });
+    const matchedIntent = intents.intents.find(e => content.includes(e.query));
+
+    if (matchedIntent) {
+        return Bot.sendOrReply(bot, message, matchedIntent.response);
+    }
 });
 
 bot.on('interactionCreate', async interaction => {
